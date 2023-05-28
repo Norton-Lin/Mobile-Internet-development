@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyMusicApp</string>
+    <string name="album_cover">专辑封面</string>
+    <string name="song_name">歌曲名称</string>
+    <string name="singer_name">歌手名字</string>
+    <string name="cur_time">00:00</string>
+    <string name="end_time">00:00</string>
+    <string name="loop_mode">播放方式</string>
+    <string name="pre_music">上一首</string>
+    <string name="play_music">播放</string>
+    <string name="next_music">下一首</string>
+    <string name="music_list">音乐列表</string>
+</resources>

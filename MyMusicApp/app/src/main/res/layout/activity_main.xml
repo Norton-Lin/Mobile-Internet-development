@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey"
+    android:keepScreenOn="true"
+    tools:context=".View.MainActivity">
+    <!--垂直滚动视图-->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="33dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="RtlHardcoded">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/main_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/clear"
+                app:title="首页" />
+
+            <ImageView
+                android:id="@+id/album_cover"
+                android:layout_width="248dp"
+                android:layout_height="248dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="20dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/album_cover"
+                android:maxWidth="248dp"
+                android:maxHeight="248dp"
+                android:src="@drawable/ic_launcher_background" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/song_name"
+                android:textColor="@color/blue"
+                android:textSize="30sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/singer_name"
+                android:textColor="@color/blue"
+                android:textSize="30sp" />
+            <!--进度条-->
+            <SeekBar
+                android:id="@+id/progress_horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:layout_marginEnd="30dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/cur_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="40dp"
+                    android:text="@string/cur_time"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/end_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="40dp"
+                    android:text="@string/end_time"
+                    android:textColor="@color/black" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/music_loop"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="30dp"
+                    android:layout_marginStart="50dp"
+                    android:background="@drawable/music_loop_button"
+                    android:contentDescription="@string/loop_mode" />
+
+                <ImageButton
+                    android:id="@+id/pre_music"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="30dp"
+                    android:background="@drawable/pre"
+                    android:contentDescription="@string/pre_music" />
+
+                <ImageButton
+                    android:id="@+id/play_music"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="30dp"
+                    android:contentDescription="@string/play_music"
+                    android:background="@drawable/play"/>
+
+                <ImageButton
+                    android:id="@+id/next_music"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="30dp"
+                    android:background="@drawable/next"
+                    android:contentDescription="@string/next_music" />
+
+                <ImageButton
+                    android:id="@+id/music_list"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="30dp"
+                    android:background="@drawable/list"
+                    android:contentDescription="@string/music_list" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
