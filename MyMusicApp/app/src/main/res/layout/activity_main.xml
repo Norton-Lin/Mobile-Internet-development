@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -18,14 +19,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="vertical"
-            tools:ignore="RtlHardcoded">
+            android:orientation="vertical">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/main_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/clear"
+
                 app:title="首页" />
 
             <ImageView
@@ -41,6 +42,7 @@
                 android:src="@drawable/ic_launcher_background" />
 
             <TextView
+                android:id="@+id/song_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -50,6 +52,7 @@
                 android:textSize="30sp" />
 
             <TextView
+                android:id="@+id/singer_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -100,18 +103,18 @@
 
                 <ImageButton
                     android:id="@+id/music_loop"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="20dp"
                     android:layout_marginStart="50dp"
                     android:background="@drawable/music_loop_button"
                     android:contentDescription="@string/loop_mode" />
 
                 <ImageButton
                     android:id="@+id/pre_music"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="20dp"
                     android:background="@drawable/pre"
                     android:contentDescription="@string/pre_music" />
 
@@ -119,23 +122,23 @@
                     android:id="@+id/play_music"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:layout_margin="30dp"
-                    android:contentDescription="@string/play_music"
-                    android:background="@drawable/play"/>
+                    android:layout_margin="20dp"
+                    android:background="@drawable/play"
+                    android:contentDescription="@string/play_music" />
 
                 <ImageButton
                     android:id="@+id/next_music"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="20dp"
                     android:background="@drawable/next"
                     android:contentDescription="@string/next_music" />
 
                 <ImageButton
                     android:id="@+id/music_list"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_margin="30dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="20dp"
                     android:background="@drawable/list"
                     android:contentDescription="@string/music_list" />
             </LinearLayout>
@@ -143,4 +146,4 @@
         </LinearLayout>
     </ScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
