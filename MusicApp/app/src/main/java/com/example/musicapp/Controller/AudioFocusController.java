@@ -4,59 +4,76 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
-
+/**
+ * @author Norton-Lin
+ * @date 2023.6.1
+ * @brief 音频焦点控制器
+ */
 public class AudioFocusController implements AudioManager.OnAudioFocusChangeListener {
 
-    private AudioManager mAudioManager;
-    private AudioFocusRequest mAudioFocusRequest;
-    private AudioAttributes mAudioAttributes; // 音频属性
+    private AudioManager manager;
+    private AudioFocusRequest request;
+    private AudioAttributes attributes; // 音频属性
 
-    private OnAudioFocusChangeListener mOnAudioFocusChangeListener;
+    private AudioFocusListener listener;
 
     public AudioFocusController(Context context) {
         // 获取系统服务
-        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
     }
 
+    /**
+     * 传递focusChange
+     * @param focusChange
+     */
     @Override
     public void onAudioFocusChange(int focusChange) {
-        // 将focusChange通过自定义的接口传递出去
-        if (mOnAudioFocusChangeListener != null) {
-            mOnAudioFocusChangeListener.onAudioFocusChange(focusChange);
+        if (listener != null) {
+            listener.onAudioFocusChange(focusChange);
         }
     }
 
-    public void requestFocus() {
+    /**
+     * 获取音频焦点
+     */
+    public void getFocus() {
         // 请求音频焦点
-        if (mAudioFocusRequest == null) {
-            if (mAudioAttributes == null) {
-                mAudioAttributes = new AudioAttributes.Builder()
+        if (request == null) {
+            if (attributes == null) {
+                attributes = new AudioAttributes.Builder()
                         // 用途 媒体
                         .setUsage(AudioAttributes.USAGE_MEDIA)
                         // 内容类型 音乐
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                         .build();
             }
-            mAudioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setAudioAttributes(mAudioAttributes)
+            request = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(attributes)
                     .setAcceptsDelayedFocusGain(true)
                     .setOnAudioFocusChangeListener(this)
                     .build();
         }
         // 发起请求，获取结果码
-        int result = mAudioManager.requestAudioFocus(mAudioFocusRequest);
-        if (mOnAudioFocusChangeListener != null)
-            mOnAudioFocusChangeListener.onAudioFocusChange(result);
+        int result = manager.requestAudioFocus(request);
+        if (listener != null)
+            listener.onAudioFocusChange(result);
     }
 
+    /**
+     * 释放音频焦点
+     */
     public void releaseFocus() {
         // 释放音频焦点
-        mAudioManager.abandonAudioFocusRequest(mAudioFocusRequest);
-        if (mOnAudioFocusChangeListener != null)
-            mOnAudioFocusChangeListener.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
+        manager.abandonAudioFocusRequest(request);
+        if (listener != null)
+            listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
     }
 
-    public void setOnAudioFocusChangeListener(OnAudioFocusChangeListener l) {
-        this.mOnAudioFocusChangeListener = l;
+    /**
+     * 设置监听器
+     * @param listener
+     */
+    public void setListener(AudioFocusListener listener) {
+        this.listener = listener;
     }
 }

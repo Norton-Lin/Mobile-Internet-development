@@ -33,7 +33,7 @@ import com.example.musicapp.Controller.MusicController;
 import com.example.musicapp.Controller.RetrofitController;
 import com.example.musicapp.Dao.Database;
 import com.example.musicapp.Model.Music;
-import com.example.musicapp.Model.MusicDetail;
+import com.example.musicapp.Model.MusicList;
 import com.example.musicapp.NetWork.NetworkRequest;
 import com.example.musicapp.R;
 import com.example.musicapp.Service.DownloadService;
@@ -48,7 +48,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * @author Norton
+ * @author Norton-Lin
  * @date 2023.5.28
  * @brief 主窗口界面
  */
@@ -77,7 +77,7 @@ public class MainActivity extends BaseActivity {
     private boolean isCircling = true; // 是否循环
     private boolean isAnimation = true; // 是否需要开启动画
     private long lastActionTime = 0; // 上次按下返回的时间
-    private int playMode = MusicController.MODE_LIST_LOOP;// 循环模式
+    private int playMode = MusicController.LIST_MUSIC_LOOP;// 循环模式
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,6 +112,9 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 基本信息初始化
+     */
     private void init() {
         controller = MusicController.getInstance(this);
         // 启动活动并绑定
@@ -133,6 +136,9 @@ public class MainActivity extends BaseActivity {
         initListener();
     }
 
+    /**
+     * 界面信息绑定
+     */
     private void initVIew() {
         main_bar = findViewById(R.id.main_bar);
         album_cover = findViewById(R.id.album_cover);
@@ -154,6 +160,9 @@ public class MainActivity extends BaseActivity {
         animator.setInterpolator(new LinearInterpolator()); // 匀速
     }
 
+    /**
+     * 初始化音乐列表
+     */
     private void initMusicList() {
 
         // 默认歌曲
@@ -167,11 +176,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    // 设置监听器等
+    /**
+     * 初始化监听器
+     */
     private void initListener() {
         setSupportActionBar(main_bar);
-        controller.setPlayMode(playMode);
-        controller.setPlayStateListener(new ProcessListener() {
+        controller.setMode(playMode);
+        controller.setProcessListener(new ProcessListener() {
             @SuppressLint("UseCompatLoadingForDrawables")
             @Override
             public void onStart() {
@@ -194,13 +205,13 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onPreparing() {
                 // 准备中
-                setDisplayDataWithoutPrepared();
+                setBasicInfo();
             }
 
             @Override
             public void onPrepared() {
                 // 准备好
-                setDisplayDataWithPrepared();
+                setReinforceInfo();
                 if (controller.isNotFirstPlay())
                     controller.start();
             }
@@ -217,7 +228,7 @@ public class MainActivity extends BaseActivity {
                 controller.playNext(playMode);
             }
         });
-        controller.create(musicList);
+        controller.init(musicList);
 
         seek_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -270,41 +281,46 @@ public class MainActivity extends BaseActivity {
     public void onClick(View view) {
         super.onClick(view);
         switch (view.getId()) {
-            case R.id.play_button:
-                // 开始或暂停按钮
-                controller.startOrPause();
+            case R.id.music_list: {
+                // 歌单列表，打开新的活动
+                startActivity(new Intent(this, MusicListActivity.class));
+            }
                 break;
-            case R.id.play_next:
+            case R.id.play_button: {
+                // 开始或暂停按钮
+                controller.click();
+            }
+                break;
+            case R.id.play_next: {
                 // 下一首按钮
                 controller.playNext(playMode);
+            }
                 break;
-            case R.id.play_pre:
+            case R.id.play_pre: {
                 // 上一首按钮
-                controller.playPrevious();
+                controller.playPre();
+            }
                 break;
-            case R.id.play_mode:
+            case R.id.play_mode: {
                 // 播放模式按钮
                 // 现根据当前模式设置点击后的图片和变更后的模式
                 // 最后在将playMode和播放器的mode同步
                 switch (playMode) {
-                    case MusicController.MODE_LIST_LOOP:
-                        controller.setPlayMode(MusicController.MODE_SINGLE_LOOP);
+                    case MusicController.LIST_MUSIC_LOOP:
+                        controller.setMode(MusicController.SINGLE_MUSIC_LOOP);
                         play_mode.setBackground(getDrawable(R.drawable.signle_loop));
                         break;
-                    case MusicController.MODE_SINGLE_LOOP:
-                        controller.setPlayMode(MusicController.MODE_RANDOM);
+                    case MusicController.SINGLE_MUSIC_LOOP:
+                        controller.setMode(MusicController.RANDOM_MUSIC);
                         play_mode.setBackground(getDrawable(R.drawable.random));
                         break;
-                    case MusicController.MODE_RANDOM:
-                        controller.setPlayMode(MusicController.MODE_LIST_LOOP);
+                    case MusicController.RANDOM_MUSIC:
+                        controller.setMode(MusicController.LIST_MUSIC_LOOP);
                         play_mode.setBackground(getDrawable(R.drawable.list_loop));
                         break;
                 }
-                playMode = controller.getPlayMode();
-                break;
-            case R.id.music_list:
-                // 歌单列表，打开新的活动
-                startActivity(new Intent(this, MusicListActivity.class));
+                playMode = controller.getMode();
+            }
                 break;
         }
     }
@@ -328,15 +344,15 @@ public class MainActivity extends BaseActivity {
             case R.id.menu_main_download:
                 // 下载按钮
                 // 开启下载服务
-                Music music = controller.getCurrentMusicData();
+                Music music = controller.getCurrentMusic();
                 try {
                     Database database = new Database(this);
-                    database.addMusic(this.musicList, music);
+                    database.addMusic(music);
                     database.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                startDownloadFileService(music);
+                startDownLoadService(music);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -372,7 +388,6 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // 双击返回才退出活动
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if ((System.currentTimeMillis() - lastActionTime) > 2000) {
                 Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
@@ -385,14 +400,14 @@ public class MainActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    private void setDisplayDataWithoutPrepared() {
-        // 设置一些不需要播放器准备好就可以显示的
-        // 专题图片、歌手、歌曲名
-        // 调用start（）使动画重新开始
-        song_name.setText(controller.getCurrentMusicData().getName());
-        singer.setText(controller.getCurrentMusicData().getSinger());
+    /**
+     * 设置播放基本信息
+     */
+    private void setBasicInfo() {
+        song_name.setText(controller.getCurrentMusic().getName());
+        singer.setText(controller.getCurrentMusic().getSinger());
         Glide.with(this)
-                .load(controller.getCurrentMusicData().getPicUrl())
+                .load(controller.getCurrentMusic().getPicUrl())
                 .circleCrop()
                 .into(album_cover);
         end_time.setText(timeTransform(0));
@@ -401,22 +416,27 @@ public class MainActivity extends BaseActivity {
         animator.start();
     }
 
-    private void setDisplayDataWithPrepared() {
-        // 设置需要播放器准备好才可以显示的内容
-        // 歌曲时长
+    /**
+     * 设置播放补充信息（歌曲时长）
+     */
+    private void setReinforceInfo() {
         end_time.setText(timeTransform(controller.getDuration()));
         seek_bar.setMax(controller.getDuration());
     }
 
-    private void startDownloadFileService(Music data) {
+    /**
+     * 启动下载服务
+     * @param music
+     */
+    private void startDownLoadService(Music music) {
         // 开启下载服务
-        String id = data.getId(); // 歌曲id
-        String fileName = data.getName() + "-" + data.getSinger(); // 用歌曲名和歌手拼接成文件名
+        String id = music.getId(); // 歌曲id
+        String fileName = music.getName() + "-" + music.getSinger(); // 用歌曲名和歌手拼接成文件名
         NetworkRequest request = RetrofitController.getRetrofit().create(NetworkRequest.class);
-        Call<MusicDetail> call = request.getMusicDetail(id, "[" + id + "]", 3200000);
-        call.enqueue(new Callback<MusicDetail>() {
+        Call<MusicList> call = request.getMusicDetail(id, "[" + id + "]", 3200000);
+        call.enqueue(new Callback<MusicList>() {
             @Override
-            public void onResponse(@NonNull Call<MusicDetail> call, @NonNull Response<MusicDetail> response) {
+            public void onResponse(@NonNull Call<MusicList> call, @NonNull Response<MusicList> response) {
                 if (response.code() == HttpsURLConnection.HTTP_OK && response.body() != null) {
                     // 如果code==200且响应体不为空
                     // 获取到下载链接
@@ -431,7 +451,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(@NonNull Call<MusicDetail> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<MusicList> call, @NonNull Throwable t) {
                 Toast.makeText(MainActivity.this, "查询失败，再试试？", Toast.LENGTH_SHORT).show();
             }
         });

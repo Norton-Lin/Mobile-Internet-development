@@ -1,5 +1,5 @@
 package com.example.musicapp.Controller;
 
-public interface OnAudioFocusChangeListener {
+public interface AudioFocusListener {
     void onAudioFocusChange(int focusChange);
 }

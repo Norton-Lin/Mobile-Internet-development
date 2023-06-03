@@ -3,7 +3,7 @@ package com.example.musicapp.Model;
 import androidx.annotation.NonNull;
 
 /**
- * @auther Norton
+ * @auther Norton-Lin
  * @date 2023.5.28
  * @brief 音乐数据类
  */

@@ -5,14 +5,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
-import androidx.annotation.Nullable;
-
 import com.example.musicapp.Model.Music;
-
-import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * @author  Norton-Lin
+ * @date 2023.6.4
+ * @brief 数据库类
+ */
 public class Database extends SQLiteOpenHelper {
     private static final String db = "appdb";
 
@@ -49,7 +48,9 @@ public class Database extends SQLiteOpenHelper {
                 music.setMusicUrl(cursor.getString(cursor.getColumnIndexOrThrow("musicUrl")));
                 musicList.add(music);
             }
-        } else {
+        } 
+        else//至少需要有一首歌 拿单向的18做保底
+        {
             Music music = new Music();
             music.setId("29719172");
             music.setSinger("one direction");
@@ -57,9 +58,10 @@ public class Database extends SQLiteOpenHelper {
             music.setName("18");
             musicList.add(music);
         }
+        cursor.close();
     }
 
-    public void addMusic(List<Music> musicList, Music music) {
+    public void addMusic(Music music) {
         SQLiteDatabase db = getReadableDatabase();
         ContentValues values = new ContentValues();
         values.put("ID", music.getId());

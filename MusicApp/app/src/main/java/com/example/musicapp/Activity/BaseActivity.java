@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * @author Norton
+ * @author Norton-Lin (这是我的github账户名)
  * @date 2023.6.3
  * @brief 所有Activity的基类
  */

@@ -11,9 +11,14 @@ import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
+import com.example.musicapp.Controller.DownLoadListener;
 import com.example.musicapp.Controller.DownloadController;
 import com.example.musicapp.R;
-
+/**
+ * @author Norton-Lin
+ * @date 2023.6.1
+ * @brief 下载服务
+ */
 public class DownloadService extends Service {
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "1";
@@ -26,7 +31,7 @@ public class DownloadService extends Service {
     public DownloadService() {
     }
 
-    private final DownloadController.DownloadFileListener listener = new DownloadController.DownloadFileListener() {
+    private final DownLoadListener listener = new DownLoadListener() {
         // 根据相应的状态构建相应的通知
         @Override
         public void onStart(String path) {

@@ -15,40 +15,35 @@ import java.net.HttpURLConnection;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
-
+/**
+ * @author Norton-Lin
+ * @date 2023.6.1
+ * @brief 下载控制器
+ */
 public class DownloadController extends AsyncTask<String, Integer, Integer> {
     public static final int DOWNLOAD_STATE_SUCCESS = 0;
     public static final int DOWNLOAD_STATE_FAIL = 1;
 
-    private DownloadFileListener downloadFileListener;
+    private DownLoadListener downLoadListener;
     File file = null;
     InputStream inputStream = null;
     RandomAccessFile randomAccessFile = null;
     private String downloadUrl = ""; // 下载链接
     private String fileName = ""; // 文件名字
     private String path = ""; // 文件路径
-    private int lastProgress; // 上次的进度
-    private int stateCode = 0; // 状态码
+    private int curProgress; // 上次的进度
+    private int statusCode = 0; // 状态码
     private long downloadLength = 0; // 上次已经下载的长度
 
-    public interface DownloadFileListener {
-        void onStart(String path);
-
-        void onError();
-
-        void onSuccess(String path);
-
-        void onProgress(int position, int percentageProgress);
+    public DownloadController(@NonNull DownLoadListener listener) {
+        this.downLoadListener = listener;
     }
 
-    public DownloadController(@NonNull DownloadFileListener l) {
-        this.downloadFileListener = l;
-    }
-
-    /*
-     * 后台任务
+    /**
+     * 后台任务 重写
+     * @param strings
+     * @return
      */
     @Override
     protected Integer doInBackground(String... strings) {
@@ -72,18 +67,18 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
                 // 获取下载内容的大小
                 if (contextLength == 0) {
                     // 没有内容
-                    stateCode = DOWNLOAD_STATE_FAIL;
+                    statusCode = DOWNLOAD_STATE_FAIL;
                     break f;
                 }
                 if (contextLength == downloadLength) {
                     // 已下载的进度等于要下载的进度，返回成功
-                    stateCode = DOWNLOAD_STATE_SUCCESS;
+                    statusCode = DOWNLOAD_STATE_SUCCESS;
                     break f;
                 }
                 // 获取输入流
                 inputStream = response.body().byteStream();
                 try {
-                    downloadFileListener.onStart(path);
+                    downLoadListener.onStart(path);
                     // 断点续传
                     randomAccessFile = new RandomAccessFile(file, "rw");
                     // 缓冲区长度1024byte
@@ -93,13 +88,13 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
                         // 写入文件
                         randomAccessFile.write(bytes, 0, readLength);
                     }
-                    stateCode = DOWNLOAD_STATE_SUCCESS;
+                    statusCode = DOWNLOAD_STATE_SUCCESS;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    stateCode = DOWNLOAD_STATE_FAIL;
+                    statusCode = DOWNLOAD_STATE_FAIL;
                 }
             } else
-                stateCode = DOWNLOAD_STATE_FAIL;
+                statusCode = DOWNLOAD_STATE_FAIL;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -112,34 +107,36 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
                 e.printStackTrace();
             }
         }
-        return stateCode;
+        return statusCode;
     }
 
-    /*
-     * 进度更新
+    /**
+     * 进度更新函数
+     * @param values
      */
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        if (values[0] > lastProgress && values[1] < 100) {
+        if (values[0] > curProgress && values[1] < 100) {
             // 第一个参数当前位置，多少kb，第二参数百分比
-            downloadFileListener.onProgress(values[0], values[1]);
-            lastProgress = values[0];
+            downLoadListener.onProgress(values[0], values[1]);
+            curProgress = values[0];
         }
     }
 
-    /*
-     * 根据下载结果回调
+    /**
+     * 下载结果回调重写
+     * @param integer
      */
     @Override
     protected void onPostExecute(Integer integer) {
         super.onPostExecute(integer);
         switch (integer) {
             case DOWNLOAD_STATE_FAIL:
-                downloadFileListener.onError();
+                downLoadListener.onError();
                 break;
             case DOWNLOAD_STATE_SUCCESS:
-                downloadFileListener.onSuccess(path);
+                downLoadListener.onSuccess(path);
                 break;
         }
     }

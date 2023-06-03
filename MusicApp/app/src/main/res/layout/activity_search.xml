@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/grey"
-    tools:context=".activity.SearchResultActivity">
+    tools:context=".Activity.SearchActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -22,14 +22,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
                 android:backgroundTint="@color/transparent"
-                app:title="搜索页" />
-
-            <Button
-                android:id="@+id/bt_play_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:text="播放所有" />
+                app:title="音乐搜索" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/search_result_list"

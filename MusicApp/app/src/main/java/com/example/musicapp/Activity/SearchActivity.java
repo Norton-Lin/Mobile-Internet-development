@@ -7,7 +7,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -17,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicapp.Apater.RecycleViewAdapter;
+import com.example.musicapp.Controller.ItemClickListener;
 import com.example.musicapp.Controller.MusicController;
 import com.example.musicapp.Controller.RetrofitController;
 import com.example.musicapp.Model.Music;
@@ -32,17 +32,16 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * @author Norton
+ * @author Norton-Lin
  * @date 2023.5.28
  * @brief 音乐搜索窗口
  */
 public class SearchActivity extends BaseActivity {
     Toolbar search_bar;
-    Button bt_play_all;
     RecyclerView search_result_list;
 
     MusicController manager;
-    List<Music> songs;
+    List<Music> musicList;
     RecycleViewAdapter adapter;
 
     @Override
@@ -52,27 +51,32 @@ public class SearchActivity extends BaseActivity {
         init();
     }
 
+    /**
+     * 初始化
+     */
     private void init() {
-        manager = MusicController.getManager();
-        songs = new ArrayList<>();
+        manager = MusicController.getController();
+        musicList = new ArrayList<>();
         adapter = new RecycleViewAdapter();
         initView();
     }
 
+    /**
+     * 界面空间绑定
+     */
     private void initView() {
         search_bar = findViewById(R.id.search_bar);
-        bt_play_all = findViewById(R.id.bt_play_all);
         search_result_list = findViewById(R.id.search_result_list);
         search_result_list.setLayoutManager(new LinearLayoutManager(this));
         setSupportActionBar(search_bar);
 
-        bt_play_all.setOnClickListener(this);
+        //bt_play_all.setOnClickListener(this);
 
-        adapter.setItemViewClickListener(new RecycleViewAdapter.OnItemViewClickListener() {
+        adapter.setListener(new ItemClickListener() {
             @Override
             public void onClick(int position) {
                 // 单击播放，并结束此活动
-                manager.addSong(songs.get(position));
+                manager.addMusic(musicList.get(position));
                 SearchActivity.this.finish();
             }
 
@@ -86,14 +90,6 @@ public class SearchActivity extends BaseActivity {
     @Override
     public void onClick(View view) {
         super.onClick(view);
-        if (view.getId() == R.id.bt_play_all) {
-            if (songs.isEmpty()) {
-                Toast.makeText(this, "没有结果", Toast.LENGTH_SHORT).show();
-            } else {
-                manager.addAllSongs(songs);
-                this.finish();
-            }
-        }
     }
 
     @Override
@@ -121,6 +117,11 @@ public class SearchActivity extends BaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * 搜索音乐
+     * 太特么难写了这玩意
+     * @param query
+     */
     private void searchMusic(String query) {
         NetworkRequest request = RetrofitController.getRetrofit().create(NetworkRequest.class);
         Call<MusicSearch> searchResult = request.getSearchResult(getUrl(query, 0));
@@ -130,12 +131,11 @@ public class SearchActivity extends BaseActivity {
                 if (response.code() == HttpURLConnection.HTTP_OK && response.body() != null) {
                     // 如果code==200 且响应体不为空
                     MusicSearch result = response.body();
-                    songs.clear();
+                    musicList.clear();
                     for (int i = 0; i < result.result.songs.size(); i++) {
-                        // 处理结果，将MusicSearchResult类中的有用信息封装成MusicData类
-                        Music data = new Music();
-                        data.setId(String.valueOf(result.result.songs.get(i).id));
-                        data.setName(result.result.songs.get(i).name);
+                        Music music = new Music();
+                        music.setId(String.valueOf(result.result.songs.get(i).id));
+                        music.setName(result.result.songs.get(i).name);
                         StringBuilder stringBuilder = new StringBuilder();
                         for (int j = 0; j < result.result.songs.get(i).ar.size(); j++) {
                             // 拼接歌手名字，中间 / 分开
@@ -144,12 +144,12 @@ public class SearchActivity extends BaseActivity {
                         }
                         // 删去最后的 / 符号
                         String artist = stringBuilder.substring(0, stringBuilder.length() - 1);
-                        data.setSinger(artist);
-                        data.setPicUrl(result.result.songs.get(i).al.picUrl);
-                        songs.add(data);
+                        music.setSinger(artist);
+                        music.setPicUrl(result.result.songs.get(i).al.picUrl);
+                        musicList.add(music);
                     }
                     // 设置列表数据
-                    setData(songs);
+                    setMusicList(musicList);
                 }
             }
 
@@ -160,13 +160,17 @@ public class SearchActivity extends BaseActivity {
         });
     }
 
-    private void setData(List<Music> songsList) {
+    /**
+     * 设置音乐列表
+     * @param musicList
+     */
+    private void setMusicList(List<Music> musicList) {
         runOnUiThread(() -> {
-            if (songsList.isEmpty()) {
+            if (musicList.isEmpty()) {
                 Toast.makeText(this, "没有结果", Toast.LENGTH_SHORT).show();
                 return;
             }
-            adapter.setData(songsList);
+            adapter.setItem(musicList);
             search_result_list.setAdapter(adapter);
         });
     }

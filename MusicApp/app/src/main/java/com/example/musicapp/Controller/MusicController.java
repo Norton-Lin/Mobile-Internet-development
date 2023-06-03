@@ -17,15 +17,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+/**
+ * @author Norton-Lin
+ * @date 2023.6.1
+ * @brief 音乐播放控制器
+ */
 public class MusicController {
 
-    public static final int MODE_SINGLE_LOOP = 1; // 单曲循环
-    public static final int MODE_LIST_LOOP = 2; // 列表循环
-    public static final int MODE_RANDOM = 3; // 随机播放
+    public static final int SINGLE_MUSIC_LOOP = 1; // 单曲循环
+    public static final int LIST_MUSIC_LOOP = 2; // 列表循环
+    public static final int RANDOM_MUSIC = 3; // 随机播放
 
     private int mode;
-    private final List<Music> songs = new ArrayList<>();
+    private final List<Music> musicList = new ArrayList<>();
     private int index = -1;
     private boolean prepared;
     private boolean notFirstPlay = false;
@@ -33,58 +37,70 @@ public class MusicController {
     private final Context context;
 
     @SuppressLint("StaticFieldLeak")
-    private static MusicController manager;
+    private static MusicController controller;
     private MediaPlayer mediaPlayer;
     private ProcessListener listener;
-    private final AudioFocusController audioFocusManager;
+    private final AudioFocusController audioFocusController;
 
     public MusicController(Context context) {
         this.context = context;
-        audioFocusManager = new AudioFocusController(context);
+        audioFocusController = new AudioFocusController(context);
     }
 
     public static MusicController getInstance(Context context) {
-        manager = new MusicController(context);
-        return manager;
+        controller = new MusicController(context);
+        return controller;
     }
 
-    public static MusicController getManager() {
-        return manager;
+    public static MusicController getController() {
+        return controller;
     }
 
-    // 创建 初始化 传入歌单
-    public void create(@NonNull List<Music> list) {
-        songs.clear();
-        songs.addAll(list);
+    /**
+     * 歌单初始化
+     * @param list
+     */
+    public void init(@NonNull List<Music> list) {
+        musicList.clear();
+        musicList.addAll(list);
         index = 0;
         mediaPlayer = new MediaPlayer();
         setDataSource(index);
         init();
     }
 
-    // 开始播放 需要准备好和没有播放
+    /**
+     * 开始播放
+     */
     public void start() {
         if (prepared && !isPlaying) {
-            audioFocusManager.requestFocus();
+            audioFocusController.getFocus();
         }
     }
 
-    // 暂停 需要准备好和在播放
+    /**
+     * 暂停播放
+     */
     public void pause() {
         if (prepared && isPlaying) {
-            audioFocusManager.releaseFocus();
+            audioFocusController.releaseFocus();
         }
     }
 
-    // 根据播放状态调用相应方法
-    public void startOrPause() {
+    /**
+     * 播放按钮触发
+     */
+    public void click() {
         if (isPlaying)
             pause();
         else
             start();
     }
 
-    // 设置播放源
+    /**
+     * 设置播放源
+     * @param position
+     */
     private void setDataSource(int position) {
         mediaPlayer.reset(); // 必须重置
         prepared = false;
@@ -95,106 +111,113 @@ public class MusicController {
             listener.onPause();
         }
         try {
-            mediaPlayer.setDataSource(songs.get(position).getMusicUrl());
+            mediaPlayer.setDataSource(musicList.get(position).getMusicUrl());
             mediaPlayer.prepareAsync();// 异步准备
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // 播放下一首
+    /**
+     * 播放下一首
+     * @param mode
+     */
     public void playNext(int mode) {
         pause();
-        if (songs.size() > 1)
+        if (musicList.size() > 1)
             // 根据播放模式计算index的值
             switch (mode) {
-                case MODE_SINGLE_LOOP:
+                case SINGLE_MUSIC_LOOP:
                     break;
-                case MODE_LIST_LOOP:
-                    if (index == songs.size() - 1) {
+                case LIST_MUSIC_LOOP:
+                    if (index == musicList.size() - 1) {
                         index = 0;
                     } else
                         index++;
                     break;
-                case MODE_RANDOM:
-                    index = new Random().nextInt(songs.size() - 1);
+                case RANDOM_MUSIC:
+                    index = new Random().nextInt(musicList.size() - 1);
                     break;
             }
         notFirstPlay = true;
         setDataSource(index);
     }
 
-    // 播放上一首
-    public void playPrevious() {
+    /**
+     * 播放上一首
+     */
+    public void playPre() {
         pause();
-        if (songs.size() > 1)
+        if (musicList.size() > 1)
             // 根据播放模式计算index的值
             switch (mode) {
-                case MODE_SINGLE_LOOP:
+                case SINGLE_MUSIC_LOOP:
                     break;
-                case MODE_LIST_LOOP:
+                case LIST_MUSIC_LOOP:
                     if (index == 0)
-                        index = songs.size() - 1;
+                        index = musicList.size() - 1;
                     else
                         index--;
                     break;
-                case MODE_RANDOM:
-                    index = new Random().nextInt(songs.size() - 1);
+                case RANDOM_MUSIC:
+                    index = new Random().nextInt(musicList.size() - 1);
                     break;
             }
         notFirstPlay = true;
         setDataSource(index);
     }
 
-    // 跳转到指定的播放位置 需要准备好
+    /**
+     * 指定播放
+     * @param position
+     */
     public void seekTo(int position) {
         if (prepared) {
             mediaPlayer.seekTo(position);
         }
     }
 
-    // 添加一首歌 并且会从这首歌开始播放
-    public void addSong(Music musicData) {
-        if (!songs.contains(musicData)) {
+    /**
+     * 添加歌曲
+     * @param music
+     */
+    public void addMusic(Music music) {
+        if (!musicList.contains(music)) {
             pause();
             index++;
             notFirstPlay = true;
-            songs.add(index, musicData);
+            musicList.add(index, music);
             setDataSource(index);
         }
     }
 
-    // 添加所有歌曲 会清空当前歌单
-    public void addAllSongs(List<Music> list) {
-        pause();
-        songs.clear();
-        notFirstPlay = true;
-        songs.addAll(list);
-        index = 0;
-        setDataSource(index);
-    }
-
-    // 删除某一首歌
-    public void removeSong(int position) {
+    /**
+     * 删除歌曲
+     * @param position
+     */
+    public void removeMusic(int position) {
         if (position == index) {
             // 如果删除当前播放的歌曲，顺序播放下一首歌
             pause();
-            playNext(MODE_LIST_LOOP);
-            songs.remove(position);
+            playNext(LIST_MUSIC_LOOP);
+            musicList.remove(position);
             index--;
             return;
         }
         if (position < index) {
             // 先删除的歌位置靠上 index--
             index--;
-            songs.remove(position);
+            musicList.remove(position);
             return;
         }
-        songs.remove(position);
+        musicList.remove(position);
     }
 
-    // 播放指定歌曲 传入参数 播放歌曲的位置
-    public void setPlaySongByPosition(int position) {
+    /**
+     * 设置播放歌曲位置
+     * @param position
+     */
+    public void setPlayPos(int position) {
         if (position != index) {
             pause();
             index = position;
@@ -202,18 +225,27 @@ public class MusicController {
         }
     }
 
-    // 获取所有歌曲
-    public List<Music> getAllSongs() {
-        return songs;
+    /**
+     * 获取所有歌曲
+     * @return
+     */
+    public List<Music> getAllMusic() {
+        return musicList;
     }
 
-    // 获取当前播放的歌曲
-    public Music getCurrentMusicData() {
-        Log.d("mediaPlayerManager", songs.get(index).toString());
-        return songs.get(index);
+    /**
+     * 获取当前播放歌曲
+     * @return
+     */
+    public Music getCurrentMusic() {
+        Log.d("mediaPlayerManager", musicList.get(index).toString());
+        return musicList.get(index);
     }
 
-    // 获取歌曲总时长 需要准备好 返回值为ms
+    /**
+     * 获取歌曲时长 ms
+     * @return
+     */
     public int getDuration() {
         if (prepared) {
             return mediaPlayer.getDuration();
@@ -221,7 +253,10 @@ public class MusicController {
             return 0;
     }
 
-    // 获取当前播放位置，需要正在播放
+    /**
+     * 获取当前播放位置
+     * @return
+     */
     public int getCurrentPosition() {
         if (isPlaying) {
             return mediaPlayer.getCurrentPosition();
@@ -229,35 +264,49 @@ public class MusicController {
             return 0;
     }
 
-    // 获取是否是首次播放
+    /**
+     * 是否首次播放，用于初始化问题
+     * @return
+     */
     public boolean isNotFirstPlay() {
         return notFirstPlay;
     }
 
-    // 设置播放模式
-    public void setPlayMode(int mode) {
-        if (mode == MODE_LIST_LOOP || mode == MODE_SINGLE_LOOP || mode == MODE_RANDOM) {
+    /**
+     * 设置播放模式
+     * @param mode
+     */
+    public void setMode(int mode) {
+        if (mode<=3&&mode>=1) {
             this.mode = mode;
         }
     }
 
-    // 获取当前的播放模式
-    public int getPlayMode() {
+    /**
+     * 获取播放模式
+     * @return
+     */
+    public int getMode() {
         return mode;
     }
 
-    // 释放资源
+    /**
+     * 释放媒体资源
+     */
     public void release() {
         if (mediaPlayer != null) {
             if (isPlaying)
-                audioFocusManager.releaseFocus();
+                audioFocusController.releaseFocus();
             mediaPlayer.release();
         }
         mediaPlayer = null;
     }
 
-    // 设置监听器
-    public void setPlayStateListener(ProcessListener listener) {
+    /**
+     * 设置监听器
+     * @param listener
+     */
+    public void setProcessListener(ProcessListener listener) {
         this.listener = listener;
     }
 
@@ -269,7 +318,7 @@ public class MusicController {
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build());
         // 默认播放模式为列表循环
-        mode = MODE_LIST_LOOP;
+        mode = LIST_MUSIC_LOOP;
         // 设置监听器
         mediaPlayer.setOnPreparedListener(mediaPlayer -> {
             prepared = true;
@@ -294,7 +343,7 @@ public class MusicController {
             return true;
         });
 
-        audioFocusManager.setOnAudioFocusChangeListener(focusChange -> {
+        audioFocusController.setListener(focusChange -> {
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_LOSS:// 永久失去音频焦点，不会再获取到焦点
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:// 暂时失去音频焦点
