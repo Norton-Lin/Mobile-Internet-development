@@ -1,13 +1,20 @@
 package com.example.mymusicapp.View;
 
+import static com.example.mymusicapp.Util.Utils.getTime;
+
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -18,16 +25,28 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.mymusicapp.Model.Music;
 import com.example.mymusicapp.Controller.*;
+import com.example.mymusicapp.Model.MusicDetail;
+import com.example.mymusicapp.Network.NetRequest;
 import com.example.mymusicapp.R;
+import com.example.mymusicapp.Service.DownloadService;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * @author Norton_Lin 2020211472
@@ -56,7 +75,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ServiceConnection connection;
     private boolean musicPlayingStatus = false;// 音乐播放状态
     private boolean musicPlayingMode = false;// 音乐播放模式（循环、列表）
+    private int mode = 0;
     private long time = 0;// 中断时的播放时间
+    private DownloadService.DownloadBinder downloadBinder;
 
     private void initView() {
         this.main_bar = findViewById(R.id.main_bar);
@@ -100,12 +121,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onPreparing() {
-
+                setView();
             }
 
             @Override
             public void onPrepared() {
-
+                setDetail();
+                if(musicController.getIsFirstPlay())
+                    musicController.start();
             }
 
             @Override
@@ -128,14 +151,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 if(musicPlayingStatus)
-                    musicController.onPause();
+                    musicController.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 if(!musicPlayingStatus)
                 {
-                    musicController.onStart();
+                    musicController.start();
                     musicController.seekTo(seekBar.getProgress());
                 }
             }
@@ -173,12 +196,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //设置xml文件
         setContentView(R.layout.activity_main);
         this.initView();
-
-        Log.i("info","test");
-        //startService(intent);
-        //bindService(intent, connection, BIND_AUTO_CREATE);
-        this.initController();
-        Log.i("info","test");
         //需要一个写存储权限
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=
                 PackageManager.PERMISSION_GRANTED) {
@@ -193,7 +210,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void initService(){
         musicController = MusicController.getInstance(this);
-        //todo 启动服务并绑定
+        intent = new Intent(this, DownloadService.class);
+        connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                downloadBinder = (DownloadService.DownloadBinder)iBinder;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+
+            }
+        };
+        startService(intent);
+        bindService(intent, connection, BIND_AUTO_CREATE);
+        initMusicList();
+        initController();
+
+    }
+
+    public void initMusicList() {
+        musicList = new ArrayList<>();
+        Music data1 = new Music();
+        data1.setId("29719172");
+        data1.setSinger("One Direction");
+        data1.setPicUrl("http://p2.music.126.net/h97UzOq8a9YzuwjKxZxZOQ==/109951165969533755.jpg");
+        data1.setName("18");
+        musicList.add(data1);
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -202,12 +245,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i("test","test");
         switch (view.getId()){
             case R.id.music_loop:
-                musicController.setPlayMode(musicPlayingMode);
-                switch (musicPlayingMode){
+                musicController.setPlayMode(mode);
+                switch (mode){
                     case 0:
-
+                        //todo 切换模式图片
                     case 1:
+                        //todo 切换模式图片
                     case 2:
+                        //todo 切换模式图片
                 }
                 //todo模式切换
                 break;
@@ -227,5 +272,123 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.i("test","test");
         }
         Log.i("test","test");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "没有权限", Toast.LENGTH_SHORT).show();
+                //设置所有按钮都不可用
+                music_loop.setEnabled(false);
+                main_bar.setEnabled(false);
+                next_music.setEnabled(false);
+                pre_music.setEnabled(false);
+                play_music.setEnabled(false);
+                music_list.setEnabled(false);
+                progress_horizontal.setEnabled(false);
+            } else initService();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item){
+        switch (item.getItemId()){
+            case R.id.menu_main_search:
+                //搜索
+                startActivity(new Intent(MainActivity.this, MusicSearchActivity.class));
+                break;
+            case R.id.menu_main_download:
+                startDownloadService(musicController.getCurrentMusic());
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onStop(){
+        super.onStop();
+        animator.pause();
+        isAnimator = false;
+    }
+
+    @Override
+    public void onRestart(){
+        super.onRestart();
+        if(musicPlayingStatus)
+            animator.resume();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        musicPlayingMode = false;
+        musicController.release();
+        unbindService(connection);
+        stopService(intent);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if(keyCode == event.KEYCODE_BACK)
+        {
+            if ((System.currentTimeMillis() - time) > 2000) {
+                Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                time = System.currentTimeMillis();
+            } else {
+                this.finish();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void setView(){
+        song_name.setText(musicController.getCurrentMusic().getName());
+        singer_name.setText(musicController.getCurrentMusic().getSinger());
+        Glide.with(this).load(musicController.getCurrentMusic().getPicUrl())
+                .circleCrop()
+                .into(album_cover);
+        end_time.setText(getTime(0));
+        cur_time.setText(getTime(0));
+        progress_horizontal.setProgress(0);
+        animator.start();
+    }
+
+    public void setDetail(){
+        end_time.setText(getTime(musicController.getDuration()));
+        progress_horizontal.setMax(musicController.getDuration());
+    }
+
+    public void startDownloadService(Music music){
+        String id = music.getId();
+        String filename = music.getName()+"_"+music.getSinger();
+        NetRequest request = RetrofitController.getRetrofit().create(NetRequest.class);
+        Call<MusicDetail> call = request.getMusicDetail(id, "[" + id + "]", 3200000);
+        call.enqueue(new Callback<MusicDetail>() {
+            @Override
+            public void onResponse(@NonNull Call<MusicDetail> call, @NonNull Response<MusicDetail> response) {
+                if (response.code() == HttpsURLConnection.HTTP_OK && response.body() != null) {
+                    //如果code==200且响应体不为空
+                    //获取到下载链接
+                    //传入下载链接和文件名字
+                    String downloadUrl = response.body().data.get(0).url;
+                    if (downloadUrl != null)
+                        downloadBinder.start(downloadUrl, filename);
+                    else Toast.makeText(MainActivity.this, "没有获取到下载链接", Toast.LENGTH_SHORT).show();
+                } else Toast.makeText(MainActivity.this, "内容为空", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<MusicDetail> call, @NonNull Throwable t) {
+                Toast.makeText(MainActivity.this, "查询失败，再试试？", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

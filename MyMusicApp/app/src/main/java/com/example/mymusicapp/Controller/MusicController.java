@@ -3,7 +3,10 @@ package com.example.mymusicapp.Controller;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -22,16 +25,18 @@ import java.util.Random;
 public class MusicController {
     private int playMode = 0;//播放模式,单曲、列表、随机
     private List<Music> musicList = new ArrayList<>();//播放列表
-    private int index = 0;
+    private int index = -1;
     private Context context;
     private MediaPlayer mediaPlayer;
-    boolean prepare = false;//播放准备状态
-    boolean isplaying = false;//是否正在播放
+    boolean isPrepared = false;//播放准备状态
+    boolean isPlaying = false;//是否正在播放
+
+    boolean isFirstPlay = false; //首次播放
 
     @SuppressLint("StaticFieldLeak")
     private static MusicController controller;
     private PlayStateListener listener;
-    AudioFocusController audioFocusController;
+    private AudioFocusController audioFocusController;
     public interface PlayStateListener {
         void onStart();
         void onPause();
@@ -74,7 +79,7 @@ public class MusicController {
         playMode = 1;//默认列表
         //监听器设置
         mediaPlayer.setOnPreparedListener(mediaPlayer -> {
-            prepare = true;
+            isPrepared = true;
             if(listener != null){
                 listener.onPrepared();
             }
@@ -84,13 +89,36 @@ public class MusicController {
                 listener.onCompletion();
         });
         mediaPlayer.setOnErrorListener((mediaPlayer,i ,i1) -> {
-            prepare = false;
-            isplaying = false;
+            isPrepared = false;
+            isPlaying = false;
             if(listener != null){
                 listener.onError();
                 listener.onPause();
             }
             return true;
+        });
+        audioFocusController.setListener(focus ->{
+            switch(focus){
+                case AudioManager.AUDIOFOCUS_LOSS://永久失去音频焦点，不会再获取到焦点
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT://暂时失去音频焦点
+                    //暂停播放
+                    isPlaying = false;
+                    mediaPlayer.pause();
+                    if (listener != null)
+                        listener.onPause();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK://与其他应用共焦点
+                    Toast.makeText(context, "与其他应用共享音频焦点", Toast.LENGTH_SHORT).show();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN://获取到焦点
+                    //开始播放
+                    isPlaying = true;
+                    mediaPlayer.start();
+                    if (listener != null) {
+                        listener.onStart();
+                    }
+                    break;
+            }
         });
 
     }
@@ -98,37 +126,37 @@ public class MusicController {
     //创建歌单
     public void initMusicList(@NonNull List<Music> list){
         musicList.clear();
-        //musicList.addAll(list);
+        musicList.addAll(list);
         index = 0;
         mediaPlayer = new MediaPlayer();
         //todo 设置数据源
         init();
     }
     //开始播放
-    public void onStart(){
-        if(prepare && !isplaying){
+    public void start(){
+        if(isPrepared && !isPlaying){
             audioFocusController.releaseFocus();
         }
     }
     //暂停
-    public void onPause(){
-        if(prepare && isplaying){
+    public void pause(){
+        if(isPrepared && isPlaying){
             audioFocusController.releaseFocus();
         }
     }
     //播放键操作
     public void click(){
-        if(isplaying)
-            onPause();
+        if(isPlaying)
+            pause();
         else
-            onStart();
+            start();
     }
     //设置播放源
     public void setMusicSource(int index){
         mediaPlayer.reset();
-        prepare = false;
-        isplaying = false;
-        onPause();
+        isPrepared = false;
+        isPlaying = false;
+        pause();
         if(listener != null){
             listener.onPreparing();
             listener.onPause();
@@ -142,7 +170,7 @@ public class MusicController {
     }
     public void playNext()
     {
-        onPause();
+        pause();
         //多首歌可以跳
         if(musicList.size()>1)
         {
@@ -156,12 +184,13 @@ public class MusicController {
             }
         }
         //todo 设置播放状态
+        isFirstPlay = true;
         setMusicSource(index);
     }
 
     public void playPre()
     {
-        onPause();
+        pause();
         //多首歌可以跳
         if(musicList.size()>1)
         {
@@ -174,7 +203,7 @@ public class MusicController {
                     break;
             }
         }
-        //todo 设置播放状态
+        isFirstPlay = true;
         setMusicSource(index);
     }
 
@@ -184,7 +213,7 @@ public class MusicController {
      */
     public void seekTo(int index)
     {
-        if(prepare)
+        if(isPrepared)
             mediaPlayer.seekTo(index);
     }
 
@@ -195,8 +224,9 @@ public class MusicController {
     public void addMusic(Music music){
         if(musicList.contains(music))
             return ;
-        onPause();
+        pause();
         ++index;
+        isFirstPlay = true;
         musicList.add(index,music);
         setMusicSource(index);
     }
@@ -208,7 +238,7 @@ public class MusicController {
     public void deleteMusic(int index){
         if(this.index == index)
         {
-            onPause();
+            pause();
             playNext();
             musicList.remove(index);
             --this.index;
@@ -230,7 +260,7 @@ public class MusicController {
     public void playPos(int index){
         if(index!=this.index)
         {
-            onPause();
+            pause();
             this.index = index;
             setMusicSource(index);
         }
@@ -243,13 +273,21 @@ public class MusicController {
     public List<Music> getMusicList(){
         return musicList;
     }
+    /**
+     * 获取当前播放歌曲
+     */
+    public Music getCurrentMusic(){
+
+        Log.d("mediaPlayerManager", musicList.get(index).toString());
+        return musicList.get(index);
+    }
 
     /**
      * 获取歌曲时长
      * @return
      */
     public int getDuration(){
-        if (prepare)
+        if (isPrepared)
             return mediaPlayer.getDuration();
         return 0;
     }
@@ -259,9 +297,17 @@ public class MusicController {
      * @return
      */
     public int getCurrentPos(){
-        if(isplaying)
+        if(isPlaying)
             return mediaPlayer.getCurrentPosition();
         return 0;
+    }
+
+    /**
+     * 是否是第一次播放
+     * @return
+     */
+    public boolean getIsFirstPlay(){
+        return isFirstPlay;
     }
 
     /**
@@ -286,6 +332,19 @@ public class MusicController {
      */
     public void setListener(PlayStateListener listener){
         this.listener = listener;
+    }
+
+    /**
+     * 释放资源
+     */
+    public void release(){
+        if(mediaPlayer != null)
+        {
+            if(isPlaying)
+                audioFocusController.releaseFocus();
+            controller.release();
+        }
+        controller = null;
     }
 
 }

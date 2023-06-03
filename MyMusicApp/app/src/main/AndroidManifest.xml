@@ -15,6 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyMusicApp"
         tools:targetApi="31" >
+        <service
+            android:name=".Service.DownloadService"
+            android:enabled="true"
+            android:exported="false" />
         <activity
             android:name=".View.MusicListActivity"
             android:exported="false" />
