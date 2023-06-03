@@ -441,7 +441,7 @@ public class MainActivity extends BaseActivity {
                     // 如果code==200且响应体不为空
                     // 获取到下载链接
                     // 传入下载链接和文件名字
-                    String downloadUrl = response.body().data.get(0).url;
+                    String downloadUrl = response.body().items.get(0).url;
                     if (downloadUrl != null)
                         downloadBinder.start(downloadUrl, fileName);
                     else

@@ -137,15 +137,15 @@ public class SearchActivity extends BaseActivity {
                         music.setId(String.valueOf(result.result.songs.get(i).id));
                         music.setName(result.result.songs.get(i).name);
                         StringBuilder stringBuilder = new StringBuilder();
-                        for (int j = 0; j < result.result.songs.get(i).ar.size(); j++) {
+                        for (int j = 0; j < result.result.songs.get(i).singer.size(); j++) {
                             // 拼接歌手名字，中间 / 分开
-                            stringBuilder.append(result.result.songs.get(i).ar.get(j).name);
+                            stringBuilder.append(result.result.songs.get(i).singer.get(j).name);
                             stringBuilder.append("/");
                         }
                         // 删去最后的 / 符号
                         String artist = stringBuilder.substring(0, stringBuilder.length() - 1);
                         music.setSinger(artist);
-                        music.setPicUrl(result.result.songs.get(i).al.picUrl);
+                        music.setPicUrl(result.result.songs.get(i).album.picUrl);
                         musicList.add(music);
                     }
                     // 设置列表数据

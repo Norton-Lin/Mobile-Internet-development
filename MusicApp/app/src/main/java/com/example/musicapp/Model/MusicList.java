@@ -8,5 +8,5 @@ import java.util.List;
  * @brief 音乐列表类
  */
 public class MusicList {
-    public List<MusicItem> data;
+    public List<MusicItem> items;
 }
