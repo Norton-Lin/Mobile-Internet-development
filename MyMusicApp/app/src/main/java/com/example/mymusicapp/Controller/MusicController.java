@@ -26,7 +26,7 @@ public class MusicController {
     private int playMode = 0;//播放模式,单曲、列表、随机
     private List<Music> musicList = new ArrayList<>();//播放列表
     private int index = -1;
-    private Context context;
+    private final Context context;
     private MediaPlayer mediaPlayer;
     boolean isPrepared = false;//播放准备状态
     boolean isPlaying = false;//是否正在播放

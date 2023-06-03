@@ -17,7 +17,7 @@
             android:orientation="vertical">
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/tb_search_result"
+                android:id="@+id/search_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -32,7 +32,7 @@
                 android:text="播放所有" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rc_search_result"
+                android:id="@+id/search_result_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>

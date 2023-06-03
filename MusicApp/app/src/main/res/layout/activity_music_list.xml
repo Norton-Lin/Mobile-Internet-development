@@ -8,7 +8,7 @@
     tools:context=".activity.MusicListActivity">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rc_songs_list"
+        android:id="@+id/music_list_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
