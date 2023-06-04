@@ -14,6 +14,7 @@ import retrofit2.http.Url;
  * @auther Norton-Lin
  * @date 2023.5.28
  * @brief 网络请求接口
+ *    retrofit 真好用
  */
 public interface NetworkRequest {
     @POST

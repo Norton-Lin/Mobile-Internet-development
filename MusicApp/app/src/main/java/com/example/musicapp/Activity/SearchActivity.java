@@ -70,7 +70,7 @@ public class SearchActivity extends BaseActivity {
         search_result_list.setLayoutManager(new LinearLayoutManager(this));
         setSupportActionBar(search_bar);
 
-        //bt_play_all.setOnClickListener(this);
+        // bt_play_all.setOnClickListener(this);
 
         adapter.setListener(new ItemClickListener() {
             @Override
@@ -120,6 +120,7 @@ public class SearchActivity extends BaseActivity {
     /**
      * 搜索音乐
      * 太特么难写了这玩意
+     * 
      * @param query
      */
     private void searchMusic(String query) {
@@ -162,6 +163,7 @@ public class SearchActivity extends BaseActivity {
 
     /**
      * 设置音乐列表
+     * 
      * @param musicList
      */
     private void setMusicList(List<Music> musicList) {

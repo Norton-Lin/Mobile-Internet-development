@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+
 /**
  * @author Norton-Lin
  * @date 2023.6.1
@@ -24,6 +25,7 @@ public class AudioFocusController implements AudioManager.OnAudioFocusChangeList
 
     /**
      * 传递focusChange
+     * 
      * @param focusChange
      */
     @Override
@@ -71,6 +73,7 @@ public class AudioFocusController implements AudioManager.OnAudioFocusChangeList
 
     /**
      * 设置监听器
+     * 
      * @param listener
      */
     public void setListener(AudioFocusListener listener) {

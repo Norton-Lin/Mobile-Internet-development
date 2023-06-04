@@ -7,8 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.example.musicapp.Model.Music;
 import java.util.List;
+
 /**
- * @author  Norton-Lin
+ * @author Norton-Lin
  * @date 2023.6.4
  * @brief 数据库类
  */
@@ -48,8 +49,7 @@ public class Database extends SQLiteOpenHelper {
                 music.setMusicUrl(cursor.getString(cursor.getColumnIndexOrThrow("musicUrl")));
                 musicList.add(music);
             }
-        } 
-        else//至少需要有一首歌 拿单向的18做保底
+        } else// 至少需要有一首歌 拿单向的18做保底
         {
             Music music = new Music();
             music.setId("29719172");

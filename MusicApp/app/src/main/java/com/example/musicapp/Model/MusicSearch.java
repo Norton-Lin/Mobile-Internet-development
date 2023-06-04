@@ -11,6 +11,4 @@ import java.util.List;
 public class MusicSearch {
     public MusicResult result;
 
-    
 }
-

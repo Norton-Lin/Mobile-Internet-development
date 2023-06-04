@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
+
 /**
  * @author Norton-Lin
  * @date 2023.6.1
@@ -42,6 +43,7 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
 
     /**
      * 后台任务 重写
+     * 
      * @param strings
      * @return
      */
@@ -112,6 +114,7 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
 
     /**
      * 进度更新函数
+     * 
      * @param values
      */
     @Override
@@ -126,6 +129,7 @@ public class DownloadController extends AsyncTask<String, Integer, Integer> {
 
     /**
      * 下载结果回调重写
+     * 
      * @param integer
      */
     @Override

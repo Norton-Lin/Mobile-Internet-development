@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 /**
  * @author Norton-Lin
  * @date 2023.6.1
@@ -58,6 +59,7 @@ public class MusicController {
 
     /**
      * 歌单初始化
+     * 
      * @param list
      */
     public void init(@NonNull List<Music> list) {
@@ -99,6 +101,7 @@ public class MusicController {
 
     /**
      * 设置播放源
+     * 
      * @param position
      */
     private void setDataSource(int position) {
@@ -120,6 +123,7 @@ public class MusicController {
 
     /**
      * 播放下一首
+     * 
      * @param mode
      */
     public void playNext(int mode) {
@@ -169,6 +173,7 @@ public class MusicController {
 
     /**
      * 指定播放
+     * 
      * @param position
      */
     public void seekTo(int position) {
@@ -179,6 +184,7 @@ public class MusicController {
 
     /**
      * 添加歌曲
+     * 
      * @param music
      */
     public void addMusic(Music music) {
@@ -193,6 +199,7 @@ public class MusicController {
 
     /**
      * 删除歌曲
+     * 
      * @param position
      */
     public void removeMusic(int position) {
@@ -215,6 +222,7 @@ public class MusicController {
 
     /**
      * 设置播放歌曲位置
+     * 
      * @param position
      */
     public void setPlayPos(int position) {
@@ -227,6 +235,7 @@ public class MusicController {
 
     /**
      * 获取所有歌曲
+     * 
      * @return
      */
     public List<Music> getAllMusic() {
@@ -235,6 +244,7 @@ public class MusicController {
 
     /**
      * 获取当前播放歌曲
+     * 
      * @return
      */
     public Music getCurrentMusic() {
@@ -244,6 +254,7 @@ public class MusicController {
 
     /**
      * 获取歌曲时长 ms
+     * 
      * @return
      */
     public int getDuration() {
@@ -255,6 +266,7 @@ public class MusicController {
 
     /**
      * 获取当前播放位置
+     * 
      * @return
      */
     public int getCurrentPosition() {
@@ -266,6 +278,7 @@ public class MusicController {
 
     /**
      * 是否首次播放，用于初始化问题
+     * 
      * @return
      */
     public boolean isNotFirstPlay() {
@@ -274,16 +287,18 @@ public class MusicController {
 
     /**
      * 设置播放模式
+     * 
      * @param mode
      */
     public void setMode(int mode) {
-        if (mode<=3&&mode>=1) {
+        if (mode <= 3 && mode >= 1) {
             this.mode = mode;
         }
     }
 
     /**
      * 获取播放模式
+     * 
      * @return
      */
     public int getMode() {
@@ -304,6 +319,7 @@ public class MusicController {
 
     /**
      * 设置监听器
+     * 
      * @param listener
      */
     public void setProcessListener(ProcessListener listener) {

@@ -44,7 +44,7 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
 
     @Override
     public int getItemCount() {
-        return musicList == null?0: musicList.size();
+        return musicList == null ? 0 : musicList.size();
     }
 
     public class InnerHolder extends RecyclerView.ViewHolder {
@@ -93,6 +93,5 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
     public void setListener(ItemClickListener listener) {
         this.listener = listener;
     }
-
 
 }
