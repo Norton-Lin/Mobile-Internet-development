@@ -17,12 +17,12 @@ public class Music {
     @NonNull
     @Override
     public String toString() {
-        return "MusicData{" +
+        return "Music{" +
                 "name='" + name + '\'' +
                 ", id='" + id + '\'' +
                 ", picUrl='" + picUrl + '\'' +
-                ", artist='" + singer + '\'' +
-                ", playUrl='" + musicUrl + '\'' +
+                ", singer='" + singer + '\'' +
+                ", musicUrl='" + musicUrl + '\'' +
                 '}';
     }
 
